@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Website Analyzer</title>
+
+<style>
+body {
+    font-family: Arial, sans-serif;
+    background: oklch(64.994% 0.19045 144.083);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+/* Main container */
+.container {
+    width: 500px;
+    background: #ffffff;
+    padding: 25px;
+    border-radius: 10px;
+    box-shadow: 0px 4px 15px rgba(0,0,0,0.1);
+    text-align: center;
+}
+
+/* Title */
+h2 {
+    margin-bottom: 20px;
+    color: #333;
+}
+
+/* Input */
+input {
+    width: 70%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+/* Button */
+button {
+    padding: 10px 15px;
+    margin-left: 10px;
+    border: none;
+    background: #4CAF50;
+    color: white;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #45a049;
+}
+
+/* Cards */
+.card {
+    text-align: left;
+    background: #fafafa;
+    padding: 10px;
+    margin-top: 10px;
+    border-radius: 6px;
+    border: 1px solid #ddd;
+}
+
+/* Title inside card */
+.card-title {
+    font-weight: bold;
+    margin-bottom: 5px;
+    color: #555;
+}
+
+/* Links */
+a {
+    color: #2c7be5;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+/* Copy button */
+.copy-btn {
+    float: right;
+    font-size: 12px;
+    cursor: pointer;
+    color: #888;
+}
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<h2>🔍 Website Analyzer</h2>
+
+<input type="text" id="url" placeholder="Enter website URL">
+<button onclick="analyze()">Analyze</button>
+
+<div id="result"></div>
+
+</div>
+
+<script>
+
+/* Copy function */
+function copyText(text) {
+    navigator.clipboard.writeText(text);
+    alert("Copied!");
+}
+
+/* Card builder */
+function createCard(title, value) {
+
+    if (!value || value.length === 0) {
+        value = "Not Available";
+    }
+
+    let content = "";
+
+    if (Array.isArray(value)) {
+        content = value.map(v => `<div><a href="${v}" target="_blank">${v}</a></div>`).join("");
+    } else if (value.startsWith("http")) {
+        content = `<a href="${value}" target="_blank">${value}</a>`;
+    } else {
+        content = value;
+    }
+
+    return `
+    <div class="card">
+        <div class="card-title">
+            ${title}
+            <span class="copy-btn" onclick="copyText('${value}')">Copy</span>
+        </div>
+        <div>${content}</div>
+    </div>`;
+}
+
+/* API call */
+function analyze() {
+    const url = document.getElementById("url").value;
+
+    fetch("/analyze?url=" + url, {
+        method: "POST"
+    })
+    .then(res => res.json())
+    .then(data => {
+
+        document.getElementById("result").innerHTML =
+            createCard("Company Name", data.companyName) +
+            createCard("Description", data.description) +
+            createCard("Emails", data.emails) +
+            createCard("Phone Numbers", data.phones) +
+            createCard("Social Links", data.socialLinks) +
+            createCard("Logo", data.logo);
+
+    })
+    .catch(err => {
+        document.getElementById("result").innerHTML = "Error fetching data";
+    });
+}
+
+</script>
+
+</body>
+</html>
